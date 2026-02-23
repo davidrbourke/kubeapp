@@ -64,6 +64,7 @@ func main() {
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(staticSub)))
 	mux.HandleFunc("GET /", app.indexHandler)
 	mux.HandleFunc("GET /pods/{namespace}/{name}", app.podDetailHandler)
+	mux.HandleFunc("POST /pods/{namespace}/{name}/restart", app.podRestartHandler)
 	mux.HandleFunc("GET /services/{namespace}/{name}", app.serviceDetailHandler)
 
 	addr := fmt.Sprintf(":%d", *port)

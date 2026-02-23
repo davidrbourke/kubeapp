@@ -82,6 +82,18 @@ func (a *App) podDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (a *App) podRestartHandler(w http.ResponseWriter, r *http.Request) {
+	ns := r.PathValue("namespace")
+	name := r.PathValue("name")
+
+	if err := a.podSvc.Delete(r.Context(), ns, name); err != nil {
+		http.Error(w, fmt.Sprintf("could not restart pod: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
 func (a *App) serviceDetailHandler(w http.ResponseWriter, r *http.Request) {
 	ns := r.PathValue("namespace")
 	name := r.PathValue("name")

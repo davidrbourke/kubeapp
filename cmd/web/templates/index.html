@@ -42,6 +42,7 @@
           <th>Namespace</th>
           <th>Status</th>
           <th>Ready</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -51,6 +52,11 @@
           <td>{{ .Namespace }}</td>
           <td><span class="badge {{ phaseBadge .Status.Phase }}">{{ .Status.Phase }}</span></td>
           <td>{{ readyCount . }}/{{ len .Spec.Containers }}</td>
+          <td>
+            <form method="POST" action="/pods/{{ .Namespace }}/{{ .Name }}/restart">
+              <button type="submit" class="btn-restart">Restart</button>
+            </form>
+          </td>
         </tr>
         {{ end }}
       </tbody>

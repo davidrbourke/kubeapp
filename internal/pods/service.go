@@ -33,3 +33,10 @@ func (s *Service) List(ctx context.Context, namespace string) ([]corev1.Pod, err
 func (s *Service) Get(ctx context.Context, namespace, name string) (*corev1.Pod, error) {
 	return s.client.CoreV1().Pods(namespace).Get(ctx, name, metav1.GetOptions{})
 }
+
+// Delete deletes a pod by name. If the pod is managed by a controller
+// (Deployment, ReplicaSet, etc.) the controller will recreate it, effectively
+// performing a restart.
+func (s *Service) Delete(ctx context.Context, namespace, name string) error {
+	return s.client.CoreV1().Pods(namespace).Delete(ctx, name, metav1.DeleteOptions{})
+}
