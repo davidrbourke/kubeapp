@@ -1,0 +1,81 @@
+{{ define "content" }}
+<a class="back" href="/">&larr; Back to overview</a>
+<div class="detail">
+  <h1>Pod: {{ .Name }}</h1>
+
+  <div class="detail-grid">
+    <span class="detail-label">Namespace</span>
+    <span class="detail-value">{{ .Namespace }}</span>
+    <span class="detail-label">Node</span>
+    <span class="detail-value">{{ .Spec.NodeName }}</span>
+    <span class="detail-label">Status</span>
+    <span class="detail-value"><span class="badge {{ phaseBadge .Status.Phase }}">{{ .Status.Phase }}</span></span>
+    <span class="detail-label">Pod IP</span>
+    <span class="detail-value">{{ .Status.PodIP }}</span>
+    {{ if .Status.StartTime }}
+    <span class="detail-label">Started</span>
+    <span class="detail-value">{{ .Status.StartTime }}</span>
+    {{ end }}
+  </div>
+
+  {{ if .Labels }}
+  <div class="detail-section">
+    <h3>Labels</h3>
+    <div class="kv-list">
+      {{ range $k, $v := .Labels }}
+      <span class="kv-key">{{ $k }}</span><span>{{ $v }}</span>
+      {{ end }}
+    </div>
+  </div>
+  {{ end }}
+
+  <div class="detail-section">
+    <h3>Containers</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Image</th>
+          <th>Ports</th>
+          <th>Ready</th>
+          <th>Restarts</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ range .Spec.Containers }}
+        {{ $cs := containerStatus $ .Name }}
+        <tr>
+          <td>{{ .Name }}</td>
+          <td><code>{{ .Image }}</code></td>
+          <td>{{ if .Ports }}{{ portList .Ports }}{{ else }}&mdash;{{ end }}</td>
+          <td>{{ if $cs }}{{ $cs.Ready }}{{ else }}&mdash;{{ end }}</td>
+          <td>{{ if $cs }}{{ $cs.RestartCount }}{{ else }}&mdash;{{ end }}</td>
+        </tr>
+        {{ end }}
+      </tbody>
+    </table>
+  </div>
+
+  {{ if .Status.Conditions }}
+  <div class="detail-section">
+    <h3>Conditions</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ range .Status.Conditions }}
+        <tr>
+          <td>{{ .Type }}</td>
+          <td>{{ .Status }}</td>
+        </tr>
+        {{ end }}
+      </tbody>
+    </table>
+  </div>
+  {{ end }}
+</div>
+{{ end }}

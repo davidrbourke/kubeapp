@@ -1,0 +1,73 @@
+{{ define "content" }}
+<a class="back" href="/">&larr; Back to overview</a>
+<div class="detail">
+  <h1>Service: {{ .Name }}</h1>
+
+  <div class="detail-grid">
+    <span class="detail-label">Namespace</span>
+    <span class="detail-value">{{ .Namespace }}</span>
+    <span class="detail-label">Type</span>
+    <span class="detail-value">{{ .Spec.Type }}</span>
+    <span class="detail-label">Cluster IP</span>
+    <span class="detail-value">{{ .Spec.ClusterIP }}</span>
+    {{ if .Spec.ExternalIPs }}
+    <span class="detail-label">External IPs</span>
+    <span class="detail-value">{{ range .Spec.ExternalIPs }}{{ . }} {{ end }}</span>
+    {{ end }}
+    {{ if .Status.LoadBalancer.Ingress }}
+    <span class="detail-label">Load Balancer</span>
+    <span class="detail-value">
+      {{ range .Status.LoadBalancer.Ingress }}{{ if .IP }}{{ .IP }}{{ end }}{{ if .Hostname }}{{ .Hostname }}{{ end }} {{ end }}
+    </span>
+    {{ end }}
+  </div>
+
+  {{ if .Spec.Ports }}
+  <div class="detail-section">
+    <h3>Ports</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Port</th>
+          <th>Target Port</th>
+          <th>Protocol</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ range .Spec.Ports }}
+        <tr>
+          <td>{{ if .Name }}{{ .Name }}{{ else }}&lt;unnamed&gt;{{ end }}</td>
+          <td>{{ .Port }}</td>
+          <td>{{ .TargetPort }}</td>
+          <td>{{ .Protocol }}</td>
+        </tr>
+        {{ end }}
+      </tbody>
+    </table>
+  </div>
+  {{ end }}
+
+  {{ if .Spec.Selector }}
+  <div class="detail-section">
+    <h3>Selector</h3>
+    <div class="kv-list">
+      {{ range $k, $v := .Spec.Selector }}
+      <span class="kv-key">{{ $k }}</span><span>{{ $v }}</span>
+      {{ end }}
+    </div>
+  </div>
+  {{ end }}
+
+  {{ if .Labels }}
+  <div class="detail-section">
+    <h3>Labels</h3>
+    <div class="kv-list">
+      {{ range $k, $v := .Labels }}
+      <span class="kv-key">{{ $k }}</span><span>{{ $v }}</span>
+      {{ end }}
+    </div>
+  </div>
+  {{ end }}
+</div>
+{{ end }}

@@ -1,0 +1,63 @@
+{{ define "content" }}
+<h1>Cluster Overview{{ if .NS }} &mdash; namespace: <code>{{ .NS }}</code>{{ end }}</h1>
+
+<div class="panels">
+  <div class="panel">
+    <h2>Services ({{ len .Services }})</h2>
+    {{ if .Services }}
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Namespace</th>
+          <th>Type</th>
+          <th>Cluster IP</th>
+          <th>External IP</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ range .Services }}
+        <tr>
+          <td><a href="/services/{{ .Namespace }}/{{ .Name }}">{{ .Name }}</a></td>
+          <td>{{ .Namespace }}</td>
+          <td>{{ .Spec.Type }}</td>
+          <td>{{ .Spec.ClusterIP }}</td>
+          <td>{{ externalIP . }}</td>
+        </tr>
+        {{ end }}
+      </tbody>
+    </table>
+    {{ else }}
+    <p class="empty">No services found.</p>
+    {{ end }}
+  </div>
+
+  <div class="panel">
+    <h2>Pods ({{ len .Pods }})</h2>
+    {{ if .Pods }}
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Namespace</th>
+          <th>Status</th>
+          <th>Ready</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ range .Pods }}
+        <tr>
+          <td><a href="/pods/{{ .Namespace }}/{{ .Name }}">{{ .Name }}</a></td>
+          <td>{{ .Namespace }}</td>
+          <td><span class="badge {{ phaseBadge .Status.Phase }}">{{ .Status.Phase }}</span></td>
+          <td>{{ readyCount . }}/{{ len .Spec.Containers }}</td>
+        </tr>
+        {{ end }}
+      </tbody>
+    </table>
+    {{ else }}
+    <p class="empty">No pods found.</p>
+    {{ end }}
+  </div>
+</div>
+{{ end }}
