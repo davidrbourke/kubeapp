@@ -1,6 +1,6 @@
 # kubeapp
 
-A CLI tool for inspecting Kubernetes clusters. Works with local clusters (minikube) and remote clusters via kubeconfig.
+A toolkit for inspecting Kubernetes clusters. Includes a CLI and a server-rendered web UI. Works with local clusters (minikube) and remote clusters via kubeconfig.
 
 ## Requirements
 
@@ -12,12 +12,19 @@ A CLI tool for inspecting Kubernetes clusters. Works with local clusters (miniku
 ```bash
 git clone <repo>
 cd kubeapp
+
+# Build the CLI
 GOTOOLCHAIN=local go build -o kubeapp ./cmd/cli/
+
+# Build the web UI server
+GOTOOLCHAIN=local go build -o kubeapp-web ./cmd/web/
 ```
 
-The `kubeapp` binary will be created in the current directory.
+Both binaries are self-contained (templates and static assets are embedded at build time).
 
-## Usage
+---
+
+## CLI (`kubeapp`)
 
 ```
 kubeapp [--kubeconfig <path>] [--namespace <ns>] <command>
@@ -29,8 +36,6 @@ kubeapp [--kubeconfig <path>] [--namespace <ns>] <command>
 |------|---------|-------------|
 | `--kubeconfig` | `~/.kube/config` | Path to kubeconfig file |
 | `-n, --namespace` | `default` | Target namespace |
-
----
 
 ### Pods
 
@@ -78,8 +83,6 @@ Conditions:
   Ready                True
 ```
 
----
-
 ### Services
 
 ```bash
@@ -122,23 +125,69 @@ Selector:
 
 ---
 
+## Web UI (`kubeapp-web`)
+
+A traditional server-rendered web UI backed by the same internal packages as the CLI.
+
+```bash
+./kubeapp-web [--port <port>] [--kubeconfig <path>] [--namespace <ns>]
+```
+
+### Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--port` | `8080` | HTTP listen port |
+| `--kubeconfig` | `~/.kube/config` | Path to kubeconfig file |
+| `--namespace` | _(empty — all namespaces)_ | Default namespace filter |
+
+### Routes
+
+| URL | Description |
+|-----|-------------|
+| `GET /` | Overview page: services + pods panels (all namespaces by default) |
+| `GET /?namespace=<ns>` | Overview filtered to a single namespace |
+| `GET /pods/{namespace}/{name}` | Pod detail page |
+| `GET /services/{namespace}/{name}` | Service detail page |
+
+### Quick start
+
+```bash
+./kubeapp-web --port 8080
+# Open http://localhost:8080
+```
+
+---
+
 ## Project Structure
 
 ```
-cmd/cli/          CLI entry point and command definitions
-  main.go         Root cobra command; k8s client initialisation
-  pods.go         pods list / pods describe commands
-  services.go     services list / services describe commands
+cmd/
+  cli/                    CLI binary
+    main.go               Root cobra command; k8s client initialisation
+    pods.go               pods list / pods describe commands
+    services.go           services list / services describe commands
+
+  web/                    Web UI binary
+    main.go               Flags, embed, template parsing, HTTP server setup
+    handlers.go           HTTP handlers and template helper functions
+    templates/
+      layout.html         Base HTML layout (nav, shared structure)
+      index.html          Overview page: services + pods panels
+      pod.html            Pod detail page
+      service.html        Service detail page
+    static/
+      style.css           Stylesheet (embedded in the binary at build time)
 
 internal/
-  k8s/client.go         Kubernetes clientset factory
-  pods/service.go       Pod list/get operations
-  services/service.go   Service list/get operations
+  k8s/client.go           Kubernetes clientset factory
+  pods/service.go         Pod List/Get operations
+  services/service.go     Service List/Get operations
 ```
 
-The `internal/` packages are decoupled from the CLI presentation layer, making them reusable by a future HTTP API (`cmd/api/`).
+The `internal/` packages are intentionally decoupled from presentation so both the CLI and the web UI reuse them directly without duplication.
 
 ## Dependencies
 
 - [client-go](https://github.com/kubernetes/client-go) v0.31.3
-- [cobra](https://github.com/spf13/cobra) v1.8.1
+- [cobra](https://github.com/spf13/cobra) v1.8.1 (CLI only)
